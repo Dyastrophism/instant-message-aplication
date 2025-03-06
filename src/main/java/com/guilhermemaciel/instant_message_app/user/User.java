@@ -2,10 +2,7 @@ package com.guilhermemaciel.instant_message_app.user;
 
 import com.guilhermemaciel.instant_message_app.chat.Chat;
 import com.guilhermemaciel.instant_message_app.common.BaseAuditingEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +18,8 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User extends BaseAuditingEntity {
+
+    private static final int LAST_ACTIVE_INTERVAL = 5;
 
     /**
      * The user's ID come from Keycloak.
@@ -41,4 +40,15 @@ public class User extends BaseAuditingEntity {
 
     @OneToMany(mappedBy = "recipient")
     private List<Chat> chatsAsRecipient;
+
+    /**
+     * Check if the user is online checking if the last seen time is less than 5 minutes.
+     * To determine if the user is online, we consider that the user is online if the last seen time is less than 5 minutes.
+     * The constant LAST_ACTIVE_INTERVAL is used to define the time interval to consider the user online.
+     * @return true if the user is online, false otherwise.
+     */
+    @Transient
+    public boolean isUserOnline() {
+        return lastSeen != null && lastSeen.isAfter(LocalDateTime.now().minusMinutes(LAST_ACTIVE_INTERVAL));
+    }
 }
