@@ -23,6 +23,10 @@ import static jakarta.persistence.GenerationType.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "chats")
+@NamedQuery(name = ChatConstants.FIND_CHAT_BY_SENDER_ID,
+            query = "SELECT DISTINCT c FROM Chat c WHERE c.sender.id = :senderId OR c.recipient.id = :senderId")
+@NamedQuery(name = ChatConstants.FIND_CHAT_BY_SENDER_ID_AND_RECEIVER_ID,
+            query = "SELECT DISTINCT c FROM Chat c WHERE (c.sender.id = :senderId AND c.recipient.id = :recipientId) OR (c.sender.id = :recipientId AND c.recipient.id = :senderId)")
 public class Chat extends BaseAuditingEntity {
 
     @Id
@@ -54,6 +58,11 @@ public class Chat extends BaseAuditingEntity {
         return recipient.getFirstName() + " " + recipient.getLastName();
     }
 
+    /**
+     * Get the unread messages count.
+     * @param senderId the sender ID.
+     * @return the unread messages count.
+     */
     @Transient
     public long getUnreadMessages(final String senderId) {
         return messages
@@ -63,6 +72,10 @@ public class Chat extends BaseAuditingEntity {
                 .count();
     }
 
+    /**
+     * Get the last message content.
+     * @return the last message content.
+     */
     @Transient
     public String getLastMessage() {
         if (messages != null && !messages.isEmpty()) {
@@ -74,6 +87,10 @@ public class Chat extends BaseAuditingEntity {
         return null;
     }
 
+    /**
+     * Get the last message time.
+     * @return the last message time.
+     */
     @Transient
     public LocalDateTime getLastMessageTime() {
         if (messages != null && !messages.isEmpty()) {
