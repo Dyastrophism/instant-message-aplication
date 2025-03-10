@@ -16,6 +16,13 @@ public class UserSynchronizer {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    /**
+     * Synchronizes the user with the IDP.
+     * If the user does not exist, it will be created.
+     * If the user exists, it will be updated.
+     * The user is identified by the email.
+     * @param token the token
+     */
     public void synchronizeWithIdp(Jwt token) {
         log.info("Synchronizing user with IDP...");
         getUserEmail(token).ifPresent(userEmail -> {
@@ -27,6 +34,12 @@ public class UserSynchronizer {
         });
     }
 
+    /**
+     * Extracts the user email from the token.
+     *
+     * @param token the token
+     * @return the user email
+     */
     private Optional<String> getUserEmail(Jwt token) {
         Map<String, Object> attributes = token.getClaims();
         if (attributes.containsKey("email")) {
