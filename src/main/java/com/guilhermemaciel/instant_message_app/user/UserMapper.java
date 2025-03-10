@@ -8,6 +8,11 @@ import java.util.Map;
 @Service
 public class UserMapper {
 
+    /**
+     * Maps the token attributes to a user.
+     * @param attributes the token attributes
+     * @return the user
+     */
     public User fromTokenAttributes(Map<String, Object> attributes) {
         User user = new User();
 
