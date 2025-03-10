@@ -13,6 +13,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    /**
+     * Gets all users except the connected user.
+     * @param connectedUser the connected user
+     * @return the list of users
+     */
     public List<UserResponse> getAllUsersExceptSelf(Authentication connectedUser) {
         return userRepository.findAllUsersExceptSelf(connectedUser.getName())
                 .stream()
