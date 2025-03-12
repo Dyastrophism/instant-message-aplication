@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.guilhermemaciel</groupId>
-	<artifactId>instant-message-app</artifactId>
+	<artifactId>instant-message-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>instant-message-app</name>
 	<description>Instant messages API project</description>
