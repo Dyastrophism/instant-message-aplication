@@ -36,7 +36,6 @@ public class UserSynchronizer {
 
     /**
      * Extracts the user email from the token.
-     *
      * @param token the token
      * @return the user email
      */
