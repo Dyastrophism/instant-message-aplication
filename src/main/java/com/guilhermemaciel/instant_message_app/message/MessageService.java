@@ -3,6 +3,10 @@ package com.guilhermemaciel.instant_message_app.message;
 import com.guilhermemaciel.instant_message_app.chat.Chat;
 import com.guilhermemaciel.instant_message_app.chat.ChatRepository;
 import com.guilhermemaciel.instant_message_app.file.FileService;
+import com.guilhermemaciel.instant_message_app.file.FileUtils;
+import com.guilhermemaciel.instant_message_app.notification.Notification;
+import com.guilhermemaciel.instant_message_app.notification.NotificationService;
+import com.guilhermemaciel.instant_message_app.notification.NotificationType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -11,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static com.guilhermemaciel.instant_message_app.notification.NotificationType.MESSAGE;
+
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -18,8 +24,14 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final FileService fileService;
+    private final NotificationService notificationService;
     private final MessageMapper mapper;
 
+    /**
+     * Save message
+     * And send notification to the receiver
+     * @param messageRequest  MessageRequest
+     */
     public void saveMessage(MessageRequest messageRequest) {
         Chat chat = chatRepository.findById(messageRequest.chatId())
                 .orElseThrow(() -> new EntityNotFoundException("Chat not found with ID:: " + messageRequest.chatId()));
@@ -34,7 +46,17 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        //TODO: Notification
+        Notification notification = Notification.builder()
+                .chatId(chat.getId())
+                .messageType(messageRequest.type())
+                .content(messageRequest.content())
+                .senderId(messageRequest.senderId())
+                .receiverId(messageRequest.receiverId())
+                .chatName(chat.getChatName(message.getSenderId()))
+                .type(MESSAGE)
+                .build();
+
+        notificationService.sendNotification(message.getReceiverId(), notification);
     }
 
     /**
@@ -50,6 +72,12 @@ public class MessageService {
                 .toList();
     }
 
+    /**
+     * Set messages to seen
+     * And send notification to the sender
+     * @param chatId  String
+     * @param authentication  Authentication
+     */
     public void setMessagesToSeen(String chatId, Authentication authentication) {
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new EntityNotFoundException("Chat not found with ID:: " + chatId));
@@ -57,9 +85,23 @@ public class MessageService {
         final String recipientId = getRecipientId(chat, authentication);
         messageRepository.setMessagesToSeenByChatId(chatId, MessageState.SEEN);
 
-        //TODO: notification
+        Notification notification = Notification.builder()
+                .chatId(chat.getId())
+                .type(NotificationType.SEEN)
+                .receiverId(recipientId)
+                .senderId(getSenderId(chat, authentication))
+                .build();
+
+        notificationService.sendNotification(recipientId, notification);
     }
 
+    /**
+     * Upload media message
+     * And send notification to the receiver
+     * @param chatId  String
+     * @param file  MultipartFile
+     * @param authentication  Authentication
+     */
     public void uploadMediaMessage(String chatId, MultipartFile file, Authentication authentication) {
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new EntityNotFoundException("Chat not found with ID:: " + chatId));
@@ -78,7 +120,16 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        //TODO: Notification
+        Notification notification = Notification.builder()
+                .chatId(chat.getId())
+                .type(NotificationType.IMAGE)
+                .messageType(MessageType.IMAGE)
+                .senderId(senderId)
+                .receiverId(recipientId)
+                .media(FileUtils.readFileFromLocation(filePath))
+                .build();
+
+        notificationService.sendNotification(recipientId, notification);
     }
 
     /**
