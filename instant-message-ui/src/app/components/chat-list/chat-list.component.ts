@@ -34,7 +34,7 @@ export class ChatListComponent {
   }
 
   chatClicked(chat: ChatResponse) {
-
+    this.chatSelected.emit(chat);
   }
 
   wrapMessage(lastMessage: string | undefined):string {
