@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import Keycloak from 'keycloak-js';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -8,14 +9,16 @@ export class KeycloakService {
 
   private _keycloak: Keycloak | undefined;
 
-  constructor() { }
+  constructor(
+    private router: Router
+  ) { }
 
   get keycloak() {
     if (!this._keycloak) {
       this._keycloak = new Keycloak({
         url: "http://localhost:9090",
-        realm: "instant-message",
-        clientId: "instant-message-ui"
+        realm: "instant-message-app",
+        clientId: "instant-message-app"
       });
     }
     return this._keycloak;
