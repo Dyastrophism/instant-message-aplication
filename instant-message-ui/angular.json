@@ -80,6 +80,7 @@
           "options": {
             "polyfills": [
               "zone.js",
+              "src/window-global-fix.ts",
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
